@@ -1,0 +1,307 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Simplest RSS Reader - connectica</title>
+
+    <style type="text/css">
+        body {
+            font-family: Verdana, Arial;
+            font-size: large;
+        }
+
+        #new-feed {
+            color: darkred;
+        }
+
+        .feed {
+            margin-right: 10px;
+            padding: 4px 4px 4px 4px;
+            background-color: darkred;
+            color: white;
+        }
+
+        .feed a {
+            color: white;
+            font-weight: bold;
+        }
+
+        .feed .delete-feed {
+            background-color: white;
+            border: 1px solid black;
+            color: darkred;
+        }
+
+        .blog {
+            padding: 10px 10px 10px 10px;
+            border: 1px dashed black;
+        }
+
+        .show-post {
+            height: 25px;
+            width: 100%;
+            vertical-align: middle;
+            text-decoration: none;
+            padding: 5px 5px 5px 5px;
+            cursor: pointer;
+        }
+
+        .new-post {
+            background-color: darkred;
+            color: white;
+        }
+
+        .old-post {
+            background-color: lightgray;
+            color: black;
+        }
+
+        .snippet {
+            color: #330000;
+        }
+
+        input[type="text"] {
+            font-family: Verdana, Arial;
+            font-size: medium;
+            height: 35px;
+            width: 200px;
+            border: 1px solid dashed;
+        }
+
+        button {
+            font-family: Verdana, Arial;
+            font-size: medium;
+            background-color: darkred;
+            color: white;
+            border-radius: 5px;
+            height: 45px;
+            width: 150px;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Simplest RSS reader ever <small><a href="#" id="new-feed">add a new feed</a></small></h1>
+
+    <div id="add-new-feed">
+        <p>
+            <label for="feed-name">Feed Name</label><br />
+            <input name="feed-name" type="text" placeholder="Feed Name" />
+        </p>
+        <p>
+            <label for="feed-url">Feed Url</label><br />
+            <input name="feed-url" type="text" placeholder="Feed Url" />
+        </p>
+        <p>
+            <button id="add-feed">Add this feed</button>
+        </p>
+    </div>
+
+
+    <div id="feed-list">
+    </div>
+
+    <p>&nbsp;</p>
+
+    <div id="blogs"></div>
+
+    <a href="https://github.com/dstpierre/connectica"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
+
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $('#add-new-feed').hide();
+
+            loadFeeds();
+
+            $('#new-feed').click(function (e) {
+                e.preventDefault();
+
+                addFeed();
+            });
+
+            $('#add-feed').click(function (e) {
+                e.preventDefault();
+
+                $('input[type=text').css('background-color', 'white');
+
+                var name = $('input[name=feed-name]').val();
+                var url = $('input[name=feed-url').val();
+
+                if((name == undefined || name == '') ||
+                    (url == undefined || url == '')) {
+
+                    
+                    $('input[type=text]').css('background-color', 'yellow');
+                    return;
+                }
+
+                var feeds = JSON.parse(localStorage.getItem('feeds'));
+                if (feeds == undefined || feeds == null) {
+                    feeds = [];
+                }
+
+                feeds.push({ name: name, url: url });
+
+                localStorage.setItem('feeds', JSON.stringify(feeds));
+
+                $('#add-new-feed').hide();
+                $('input[type=text').val('');
+
+                loadFeeds();
+            });
+
+            $('body').on({
+                click: function (e) {
+                    e.preventDefault();
+
+                    var url = $(this).parent().data('url');
+                    var feed = sessionStorage.getItem(url);
+                    if(feed == undefined || feed == null) {
+                        parseRSS(url, function (data) {
+                            sessionStorage.setItem(url, JSON.stringify(data));
+                            showFeed(data);
+                        });
+                    } else {
+                        console.log('cached');
+                        var data = JSON.parse(feed);
+                        showFeed(data);
+                    }
+                }
+            }, '.switch-feed');
+
+            $('body').on({
+                click: function (e) {
+                    e.preventDefault();
+
+                    var url = $(this).parent().data('url');
+
+                    $(this).parent().remove();
+                    
+                    var feeds = JSON.parse(localStorage.getItem('feeds'));
+                    if (feeds != undefined && feeds != null) {
+                        var newFeeds = [];
+                        feeds.forEach(function (f) {
+                            if (f.url != url)
+                                newFeeds.push(f);
+                        });
+
+                        localStorage.setItem('feeds', JSON.stringify(newFeeds));
+                    }
+                }
+            }, '.delete-feed');
+
+            $('body').on({
+                click: function(e) {
+                    e.preventDefault();
+
+                    $('.content').hide();
+
+                    var parent = $(this).parent();
+
+                    if(parent.hasClass('active')) {
+                        parent.find('.snippet').show();
+                        parent.find('.content').hide();
+                        parent.removeClass('active');
+                    } else {
+                        parent.find('.snippet').hide();
+                        parent.find('.content').show();
+                        parent.addClass('active');
+
+                        var url = $(this).data('url');
+
+                        if ($(this).hasClass('new-post')) {
+                            flagAsRead(url);
+                            $(this).removeClass('new-post').addClass('old-post');
+                        }
+                        
+                    }
+                }
+            }, '.show-post');
+        });
+
+        function addFeed() {
+            $('#add-new-feed').show();
+            $('input[name=feed-name').focus();
+        }
+
+        function loadFeeds() {
+            $('#feed-list').text('');
+
+            var feeds = JSON.parse(localStorage.getItem('feeds'));
+            if (feeds == undefined || feeds == null || feeds.length == 0) {
+                addFeed();
+            } else {
+                feeds.forEach(function(f) {
+                    $('#feed-list').append(
+                        '<span class="feed" data-url="' + f.url + '">' +
+                        '  <a href="#" class="switch-feed">' + f.name + '</a>' +
+                        '  <a href="#" class="delete-feed">X</a>' +
+                        '</span>');
+                });
+            }
+        }
+
+        function showFeed(feed) {
+            $('#blogs').html('');
+
+            feed.entries.forEach(function (f) {
+                var d = new Date(f.publishedDate);
+                $('#blogs').append(
+                    '<div class="blog">' +
+                    '  <div class="show-post ' + (hasRead(f.link) ? 'old-post' : 'new-post') + '" data-url="' + f.link + '">' +
+                       d.toDateString() + ' - ' + f.title +
+                    '</div>' +
+                    '<p class="snippet">' + f.contentSnippet + '</p>' +
+                    '<div class="content">' + f.content + '</div>' +
+                    '</div>');
+            });
+
+            $('.content').hide();
+        }
+
+        function flagAsRead(url) {
+            var read = JSON.parse(localStorage.getItem('read'));
+            if (read == undefined || read == null) {
+                read = [];
+            }
+
+            read.push(url);
+
+            localStorage.setItem('read', JSON.stringify(read));
+        }
+
+        function hasRead(url) {
+            var read = JSON.parse(localStorage.getItem('read'));
+            if (read == undefined || read == null) {
+                return false;
+            }
+            var found = false;
+            for (var i = 0; i < read.length; i++) {
+                if (read[i] === url) {
+                    found = true;
+                    break;
+                }
+            }
+
+            return found;
+        }
+
+        function parseRSS(url, callback) {
+            $.ajax({
+                url: 'https://ajax.googleapis.com/ajax/services/feed/load?v=1.0&num=10&callback=?&q=' + encodeURIComponent(url),
+                dataType: 'json',
+                success: function (data) {
+                    callback(data.responseData.feed);
+                }
+            });
+        }
+
+        function debugObject(obj) {
+            var keys = Object.keys(obj);
+            for (var i = 0; i < keys.length; i++) {
+                console.log(keys[i]);
+            }
+        }
+    </script>
+</body>
+</html>
