@@ -1,0 +1,181 @@
+html {
+    height: 100%;
+}
+
+body {
+    font-family: Verdana, Arial;
+    padding: 0px;
+    margin: 0px;
+    height: 100%;
+}
+
+nav {
+    height: 25px;
+    background-color: #0f2f00;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0px;
+}
+
+nav ul li {
+    display: inline;
+    padding-right: 10px;
+}
+
+nav ul li a {
+    color: white;
+    line-height: 25px;
+    vertical-align: middle;
+    text-decoration: none;
+    font-size: small;
+    color: #009999;
+    font-weight: bold;
+}
+
+nav ul li a.active {
+    color: #fff;
+}
+
+nav ul li a:hover {
+    color: #fff;
+}
+
+h1 {
+    color: #0a2920;
+    padding-left: 10px;
+}
+
+#new-feed {
+    background-color: #9f0008;
+    color: #fff;
+    border-radius: 5px;
+    border: 1px solid #00655a;
+    color: #fff;
+    padding: 10px;
+    height: 15px;
+    text-decoration: none;
+}
+
+#new-feed:hover {
+    background-color: #009999;
+}
+
+#add-new-feed {
+    padding: 15px;
+}
+
+#container {
+    width: 100%;
+    height: 100%;
+}
+
+#feeds {
+    margin: 0px;
+    padding: 0px;
+    float: left;
+    border-top: 1px solid #0f2f00;
+    width: 15%;
+    height: 100%;
+    background-color: #eeeeee;
+}
+
+#feed-list ul {
+    list-style: none;
+    margin: 0px;
+    padding: 0px;
+}
+
+#feed-list ul li {
+    height: 35px;
+    background-color: #0f2f00;
+    border-bottom: 1px solid #0f2f00;
+}
+
+#feed-list ul li.active {
+    background-color: #00655a;
+}
+
+#feed-list ul li:hover {
+    background-color: #00655a;
+}
+
+#feed-list ul li a {
+    color: #fff;
+    line-height: 35px;
+    vertical-align: middle;
+    padding-left: 5px;
+    text-decoration: none;
+}
+
+#feed-list ul li a.delete-feed {
+    text-decoration: none;
+    padding-left: 5px;
+    color: #fff;
+}
+
+#rss-data {
+    float: left;
+    width: 84%;
+    border-left: 1px solid #0f2f00;
+    border-top: 1px solid #0f2f00;
+    height: 100%;
+    min-height: 100%;
+
+}
+
+#rss-data:after {
+    clear: both;
+}
+
+.blog {
+    padding: 10px;
+    border-bottom: 1px solid #0f2f00;
+}
+
+.show-post {
+    height: 25px;
+    width: 100%;
+    vertical-align: middle;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.new-post {
+    color: #32000a;
+    font-weight: bold;
+}
+
+.old-post {
+    color: #6743a4;
+}
+
+.snippet {
+    color: #0f2f00;
+    font-size: small;
+}
+
+input[type="text"] {
+    font-family: Verdana, Arial;
+    font-size: medium;
+    height: 35px;
+    width: 200px;
+    border: 1px solid dashed;
+}
+
+button {
+    font-family: Verdana, Arial;
+    font-size: medium;
+    background-color: #9f0008;
+    color: #fff;
+    border-radius: 5px;
+    border: 1px solid #00655a;
+    height: 45px;
+    width: 150px;
+}
+
+#about {
+    width: 875px;
+    margin: auto;
+}

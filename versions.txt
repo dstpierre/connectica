@@ -1,0 +1,16 @@
+connecti.ca - a free and open source RSS reader
+
+by:		Dominic St-Pierre
+source:		https://github.com/dstpierre/connectica
+live:		http://connecti.ca
+
+2013/12/07
+------------------------------
+- Created external app.js, styles.css to separate functionality
+
+- Tried to make things a bit better looking...
+
+
+2013/12/04
+
+- Initial prototype, a working prototype of the app.
