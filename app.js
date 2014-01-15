@@ -138,7 +138,7 @@ function loadFeeds() {
             buffer +=
                 '<li class="feed" data-url="' + f.url + '">' +
                 '  <a href="#" class="delete-feed" title="Delete this feed">[x]</a>' +
-                '  <a href="#" class="switch-feed">' + f.name + '</a>' +
+                '  <a href="#" class="switch-feed"><span class="unread-posts"></span> ' + f.name + '</a>' +
                 '</li>';
         });
 
@@ -148,30 +148,16 @@ function loadFeeds() {
         var items = document.querySelectorAll('.switch-feed');
         if (items != undefined && items != null && items.length > 0) {
             [].forEach.call(items, function (l) {
+                loadFeed(l.parentNode, false);
+
                 l.addEventListener('click', function (e) {
                     e.preventDefault();
 
-                    var active = document.querySelector('.active');
-                    if (active != undefined && active != null) {
-                        removeClass(active, 'active');
-                    }
-
-                    var li = this.parentNode;
-                    addClass(li, 'active');
-                    var url = li.getAttribute('data-url');
-                    var feed = sessionStorage.getItem(url);
-                    if (feed == undefined || feed == null) {
-                        parseRSS(url, function (data) {
-                            sessionStorage.setItem(url, JSON.stringify(data.feed));
-                            showFeed(data.feed);
-                        });
-                    } else {
-                        console.log('cached');
-                        var data = JSON.parse(feed);
-                        showFeed(data);
-                    }
+                    loadFeed(this.parentNode, true);
                 });
             });
+
+            setTimeout(function () { calculateUnRead(); }, 4321);
         }
 
         items = document.querySelectorAll('.delete-feed');
@@ -203,7 +189,52 @@ function loadFeeds() {
     }
 }
 
-function showFeed(feed) {
+function calculateUnRead() {
+    var feeds = document.querySelectorAll('.switch-feed');
+    if (feeds != undefined && feeds != null && feeds.length > 0) {
+        [].forEach.call(feeds, function (f) {
+            var li = f.parentNode;
+            var posts = sessionStorage.getItem(li.getAttribute('data-url'));
+            if (posts != undefined && posts != null) {
+                var data = JSON.parse(posts);
+                var count = 0;
+                data.entries.forEach(function (p) {
+                    if (!hasRead(p.link))
+                        count++;
+                });
+                if (count > 0) {
+                    var span = f.querySelector('.unread-posts');
+                    if (span)
+                        span.innerHTML = '(' + count + ')';
+                }
+            }
+        });
+    }
+}
+function loadFeed(li, displayPosts) {
+    var active = document.querySelector('.active');
+    if (active != undefined && active != null) {
+        removeClass(active, 'active');
+    }
+
+    addClass(li, 'active');
+    var url = li.getAttribute('data-url');
+    var feed = sessionStorage.getItem(url);
+    if (feed == undefined || feed == null) {
+        parseRSS(url, function (data) {
+            sessionStorage.setItem(url, JSON.stringify(data.feed));
+            if(displayPosts)
+                showPosts(data.feed);
+        });
+    } else {
+        console.log('cached');
+        var data = JSON.parse(feed);
+        if(displayPosts)
+            showPosts(data);
+    }
+}
+
+function showPosts(feed) {
     var blogs = document.querySelector('#blogs');
 
     var posts = document.querySelectorAll('.show-post');
@@ -277,6 +308,8 @@ function flagAsRead(url) {
     read.push(url);
 
     localStorage.setItem('read', JSON.stringify(read));
+
+    calculateUnRead();
 }
 
 function hasRead(url) {

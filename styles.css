@@ -107,6 +107,8 @@ h1 {
     vertical-align: middle;
     padding-left: 5px;
     text-decoration: none;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 #feed-list ul li a.delete-feed {
